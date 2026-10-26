@@ -1,0 +1,45 @@
+# Compila la app de iPhone en una Mac de GitHub. Sin certificados de Apple solo verifica que compile;
+# con los secretos de Apple Developer genera el .ipa y lo sube a TestFlight.
+name: App iPhone
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  ios:
+    runs-on: macos-15
+    env:
+      HAS_APPLE: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: native/package-lock.json }
+      - name: Preparar la app web dentro del proyecto nativo
+        working-directory: native
+        run: npm ci && npm run sync
+      - name: Verificar que compila (simulador)
+        if: env.HAS_APPLE != 'true'
+        working-directory: native/ios/App
+        run: xcodebuild -project App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build | tail -20
+      - name: Firmar, compilar y subir a TestFlight
+        if: env.HAS_APPLE == 'true'
+        working-directory: native/ios/App
+        env:
+          P12: ${{ secrets.APPLE_CERTIFICATE_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          ASC_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          KC=$RUNNER_TEMP/build.keychain; security create-keychain -p tmp "$KC"; security default-keychain -s "$KC"; security unlock-keychain -p tmp "$KC"
+          echo "$P12" | base64 -d > cert.p12; security import cert.p12 -k "$KC" -P "$P12_PASSWORD" -T /usr/bin/codesign; security set-key-partition-list -S apple-tool:,apple: -s -k tmp "$KC"
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles; echo "$PROFILE" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive DEVELOPMENT_TEAM=$TEAM_ID CURRENT_PROJECT_VERSION=${{ github.run_number }} archive
+          cat > export.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>teamID</key><string>$TEAM_ID</string></dict></plist>
+          PL
+          xcodebuild -exportArchive -archivePath $RUNNER_TEMP/App.xcarchive -exportOptionsPlist export.plist -exportPath $RUNNER_TEMP/out
+          mkdir -p ~/.appstoreconnect/private_keys; echo "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
+          xcrun altool --upload-app -f $RUNNER_TEMP/out/*.ipa -t ios --apiKey $ASC_KEY_ID --apiIssuer $ASC_ISSUER

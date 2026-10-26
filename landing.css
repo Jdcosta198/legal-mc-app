@@ -1,0 +1,27 @@
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.hero-actions .pill{margin-top:0;border:0}
+.pill.ghost{background:#ffffff14;color:#fff;border:1px solid #ffffff40;backdrop-filter:blur(8px)}
+.hero-devices{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px!important}
+.hero-devices span{font-size:11px;color:#d7e3ea;border:1px solid #ffffff26;border-radius:99px;padding:4px 10px;background:#0006}
+.enter-link{text-decoration:none;display:inline-flex;align-items:center}
+.download{margin-top:10px}
+.dl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.dl-card{display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.dl-card h3{margin:6px 0 0;font-size:19px}
+.dl-card p{flex:1;margin:4px 0 14px}
+.dl-card .secondary{align-self:flex-start}
+.dl-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(140deg,#e9c88822,#42a5ff14);border:1px solid #e9c88833;color:#e9c888}
+.dl-ic svg{width:26px;height:26px}
+html[data-device=ios] .dl-card[data-device=ios],html[data-device=android] .dl-card[data-device=android],html[data-device=desktop] .dl-card[data-device=desktop]{border-color:#e9c88866;box-shadow:0 0 0 1px #e9c88833,0 18px 40px -20px #e9c88855}
+html[data-device=ios] .dl-card[data-device=ios]:after,html[data-device=android] .dl-card[data-device=android]:after,html[data-device=desktop] .dl-card[data-device=desktop]:after{content:'Tu equipo';position:absolute;top:18px;right:18px;font-size:10px;font-weight:700;letter-spacing:1px;color:#1d160a;background:#e9c888;border-radius:99px;padding:3px 9px}
+.dl-qr{grid-column:1/-1;display:flex;gap:22px;align-items:center;background:linear-gradient(120deg,#f6f3ec,#e9e2d2);color:#14212b}
+.dl-qr p{color:#3c4c57}
+.dl-qr h3{margin:0 0 4px}
+.dl-qr img{border-radius:10px;background:#fff;flex:none}
+html[data-device=ios] .dl-qr,html[data-device=android] .dl-qr{display:none}
+.fx-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.fx h3{margin:12px 0 6px;font-size:17px}
+.fx-n{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:#e9c88814;color:#e9c888;font-size:21px}
+.access-card .pill{text-decoration:none}
+@media(max-width:850px){.dl-grid{grid-template-columns:1fr}.fx-grid{grid-template-columns:1fr 1fr}.header-actions .enter-link{display:none}}
+@media(max-width:480px){.fx-grid{grid-template-columns:1fr}.hero-actions .pill{flex:1}.dl-qr{flex-direction:column;text-align:center}}

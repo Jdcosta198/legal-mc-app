@@ -1,0 +1,12 @@
+{
+ "name":"legal-martinez-cortes-despacho",
+ "version":"2.0.0",
+ "private":true,
+ "type":"module",
+ "scripts":{
+  "test":"node --test tests/*.test.mjs",
+  "test:e2e":"python3 tests/e2e_despacho.py",
+  "test:sql":"python3 tests/sql/test_mejoras.py",
+  "dev":"python3 -m http.server 4174"
+ }
+}

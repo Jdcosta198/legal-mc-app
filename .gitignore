@@ -1,0 +1,5 @@
+tests/capturas/
+node_modules/
+__pycache__/
+*.jks
+*.keystore

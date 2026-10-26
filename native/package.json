@@ -1,0 +1,25 @@
+{
+  "name": "legal-mc-nativo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Apps nativas de Android e iOS de Legal Martínez & Cortés (Capacitor)",
+  "scripts": {
+    "web": "node scripts/copy-web.mjs",
+    "sync": "npm run web && npx cap sync",
+    "assets": "npx capacitor-assets generate --iconBackgroundColor '#080c10' --iconBackgroundColorDark '#080c10' --splashBackgroundColor '#080c10' --splashBackgroundColorDark '#080c10'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/browser": "^7.0.5",
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/core": "^7.6.9",
+    "@capacitor/filesystem": "^7.1.9",
+    "@capacitor/ios": "^7.6.9",
+    "@capacitor/share": "^7.0.4",
+    "@capacitor/splash-screen": "^7.0.5",
+    "@capacitor/status-bar": "^7.0.6",
+    "@capawesome-team/capacitor-file-opener": "^7.0.1"
+  }
+}

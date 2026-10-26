@@ -1,0 +1,12 @@
+{
+  "appId": "cr.legalmc.despacho",
+  "appName": "Legal M&C",
+  "webDir": "www",
+  "backgroundColor": "#080c10",
+  "android": { "allowMixedContent": false, "backgroundColor": "#080c10" },
+  "ios": { "contentInset": "never", "backgroundColor": "#080c10", "scheme": "Legal M&C" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 1200, "launchAutoHide": true, "backgroundColor": "#080c10", "showSpinner": false, "androidScaleType": "CENTER_CROP" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#080c10", "overlaysWebView": false }
+  }
+}

@@ -1,0 +1,155 @@
+{
+ "id": "/",
+ "name": "Legal Martínez & Cortés",
+ "short_name": "Legal M&C",
+ "description": "App privada del despacho Legal Martínez & Cortés: expedientes, documentos, agenda y honorarios.",
+ "lang": "es-CR",
+ "dir": "ltr",
+ "start_url": "/app.html?source=pwa",
+ "scope": "/",
+ "display": "standalone",
+ "display_override": [
+  "window-controls-overlay",
+  "standalone"
+ ],
+ "orientation": "any",
+ "background_color": "#080c10",
+ "theme_color": "#080c10",
+ "categories": [
+  "business",
+  "productivity"
+ ],
+ "icons": [
+  {
+   "src": "/icon-48.png",
+   "sizes": "48x48",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-72.png",
+   "sizes": "72x72",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-96.png",
+   "sizes": "96x96",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-128.png",
+   "sizes": "128x128",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-144.png",
+   "sizes": "144x144",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-152.png",
+   "sizes": "152x152",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-256.png",
+   "sizes": "256x256",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-384.png",
+   "sizes": "384x384",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Agenda y plazos",
+   "short_name": "Agenda",
+   "url": "/app.html?view=events",
+   "icons": [
+    {
+     "src": "/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  },
+  {
+   "name": "Calculadora de honorarios",
+   "short_name": "Calculadora",
+   "url": "/app.html?view=calculator",
+   "icons": [
+    {
+     "src": "/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  },
+  {
+   "name": "Subir PDF",
+   "short_name": "Documentos",
+   "url": "/app.html?view=documents",
+   "icons": [
+    {
+     "src": "/icon-96.png",
+     "sizes": "96x96"
+    }
+   ]
+  }
+ ],
+ "screenshots": [
+  {
+   "src": "/screens/movil-inicio.jpg",
+   "sizes": "780x1688",
+   "type": "image/jpeg",
+   "form_factor": "narrow",
+   "label": "Inicio del despacho"
+  },
+  {
+   "src": "/screens/movil-calculadora.jpg",
+   "sizes": "780x1688",
+   "type": "image/jpeg",
+   "form_factor": "narrow",
+   "label": "Calculadora de honorarios"
+  },
+  {
+   "src": "/screens/escritorio.jpg",
+   "sizes": "1440x900",
+   "type": "image/jpeg",
+   "form_factor": "wide",
+   "label": "Despacho en la computadora"
+  }
+ ],
+ "prefer_related_applications": false
+}
