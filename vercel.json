@@ -1,7 +1,73 @@
-{"cleanUrls":false,"headers":[
- {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"no-referrer"},{"key":"X-Frame-Options","value":"DENY"},{"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=(), payment=(), usb=()"},{"key":"Strict-Transport-Security","value":"max-age=63072000; includeSubDomains"},{"key":"Cross-Origin-Opener-Policy","value":"same-origin-allow-popups"},
-  {"key":"Content-Security-Policy","value":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-src 'self' blob:; connect-src 'self' https://ebjpgzgymopbnpzevwbm.supabase.co wss://ebjpgzgymopbnpzevwbm.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"}]},
- {"source":"/(app.html|app.js|calc/(.*)|despacho.css|sw.js|manifest.webmanifest)","headers":[{"key":"Cache-Control","value":"no-cache"}]},
- {"source":"/legal-mc.mobileconfig","headers":[{"key":"Content-Type","value":"application/x-apple-aspen-config"},{"key":"Content-Disposition","value":"attachment; filename=\"Legal-MC.mobileconfig\""}]},
- {"source":"/(splash/(.*)|justice.webp|icon-(.*).png)","headers":[{"key":"Cache-Control","value":"public, max-age=604800"}]}
-]}
+{
+ "framework": null,
+ "buildCommand": "",
+ "installCommand": "",
+ "outputDirectory": ".",
+ "cleanUrls": false,
+ "headers": [
+  {
+   "source": "/(.*)",
+   "headers": [
+    {
+     "key": "X-Content-Type-Options",
+     "value": "nosniff"
+    },
+    {
+     "key": "Referrer-Policy",
+     "value": "no-referrer"
+    },
+    {
+     "key": "X-Frame-Options",
+     "value": "DENY"
+    },
+    {
+     "key": "Permissions-Policy",
+     "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    },
+    {
+     "key": "Strict-Transport-Security",
+     "value": "max-age=63072000; includeSubDomains"
+    },
+    {
+     "key": "Cross-Origin-Opener-Policy",
+     "value": "same-origin-allow-popups"
+    },
+    {
+     "key": "Content-Security-Policy",
+     "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-src 'self' blob:; connect-src 'self' https://ebjpgzgymopbnpzevwbm.supabase.co wss://ebjpgzgymopbnpzevwbm.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    }
+   ]
+  },
+  {
+   "source": "/(app.html|app.js|calc/(.*)|despacho.css|sw.js|manifest.webmanifest)",
+   "headers": [
+    {
+     "key": "Cache-Control",
+     "value": "no-cache"
+    }
+   ]
+  },
+  {
+   "source": "/legal-mc.mobileconfig",
+   "headers": [
+    {
+     "key": "Content-Type",
+     "value": "application/x-apple-aspen-config"
+    },
+    {
+     "key": "Content-Disposition",
+     "value": "attachment; filename=\"Legal-MC.mobileconfig\""
+    }
+   ]
+  },
+  {
+   "source": "/(splash/(.*)|justice.webp|icon-(.*).png)",
+   "headers": [
+    {
+     "key": "Cache-Control",
+     "value": "public, max-age=604800"
+    }
+   ]
+  }
+ ]
+}

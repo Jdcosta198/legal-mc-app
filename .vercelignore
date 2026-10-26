@@ -1,0 +1,6 @@
+native
+tests
+db
+.github
+README.md
+*.py
