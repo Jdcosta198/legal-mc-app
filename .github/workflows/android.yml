@@ -15,7 +15,7 @@ jobs:
         with: { node-version: 22, cache: npm, cache-dependency-path: native/package-lock.json }
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
-      - uses: android-actions/setup-android@v3
+      # El runner de GitHub ya trae el SDK de Android instalado (ANDROID_HOME).
       - name: Preparar la app web dentro del proyecto nativo
         working-directory: native
         run: npm ci && npm run sync
