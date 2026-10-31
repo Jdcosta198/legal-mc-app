@@ -1,0 +1,60 @@
+[data-install]{display:inline-flex;align-items:center;gap:8px;border:1px solid #d9b56f;background:linear-gradient(180deg,#f1d79d,#d8ae62);color:#1d160a;padding:10px 18px;min-height:44px;border-radius:99px;font:700 13px system-ui;white-space:nowrap;cursor:pointer;box-shadow:0 6px 22px -8px #e9c88899}
+[data-install] span{font-size:15px;line-height:1}
+.is-standalone [data-install]{display:none!important}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
+.install-dialog{position:fixed;background:radial-gradient(120% 60% at 100% 0%,#173847 0%,transparent 60%),#121a21;color:#fff;border:1px solid #3d5464;border-radius:30px;padding:28px;width:min(470px,calc(100vw - 24px));max-height:92dvh;overflow:auto;box-shadow:0 40px 90px #000a}
+.install-dialog::backdrop{background:#000b;backdrop-filter:blur(8px)}
+.install-head{display:flex;gap:16px;align-items:center;margin-right:30px}
+.install-head img{border-radius:18px;box-shadow:0 8px 24px #0008;flex:none}
+.install-dialog h2{font-size:24px;line-height:1.15;margin:0 0 6px;letter-spacing:-.5px}
+.install-head p{margin:0;font-size:13.5px;color:#c4d2db;line-height:1.55}
+.install-close{position:absolute;right:14px;top:12px;background:none;border:0;color:#fff;font-size:30px;width:44px;height:44px;cursor:pointer}
+.install-steps{list-style:none;padding:0;margin:20px 0 6px;display:grid;gap:10px;counter-reset:s}
+.install-steps li{display:flex;gap:14px;align-items:center;background:#0d151c;border:1px solid #ffffff10;border-radius:16px;padding:12px 14px;font-size:14px;color:#dbe6ec;line-height:1.5;animation:install-step .5s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i)*120ms + 150ms)}
+.install-steps b{color:#fff}
+.install-ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#e9c88814;color:#e9c888;border:1px solid #e9c88833}
+.step-ok{color:#7ee0b3}
+.install-note{background:#0b1117;border-radius:14px;padding:12px 14px;font-size:12px;color:#aebcc6;margin:14px 0}
+.install-done,.install-copy{border:0;width:100%;cursor:pointer}
+.install-copy{margin-top:8px}
+.install-qr{display:flex;gap:16px;align-items:center;background:#f6f3ec;color:#14212b;border-radius:18px;padding:12px;margin-top:14px}
+.install-qr img{border-radius:8px;background:#fff;flex:none}
+.install-qr p{margin:0;font-size:13px;line-height:1.5}
+.install-alt{margin-top:12px;border:1px solid #ffffff14;border-radius:14px;padding:0 14px}
+.install-alt summary{font-size:13px;color:#cfe3f0}
+.install-alt p{font-size:12.5px;color:#b9c7d1;line-height:1.6}
+.install-profile{display:inline-flex;margin:0 0 14px;text-decoration:none}
+@keyframes install-step{from{opacity:0;transform:translateY(10px)}}
+
+/* Demostración animada en un teléfono simulado */
+.install-demo{display:grid;place-items:center;margin:18px 0 4px}
+.demo-screen{position:relative;width:190px;height:250px;border-radius:28px;border:6px solid #2a3540;background:#0b1218;overflow:hidden;box-shadow:inset 0 0 0 1px #ffffff10,0 14px 40px #0009}
+.demo-site{position:absolute;inset:30px 10px 52px;border-radius:14px;background:linear-gradient(160deg,#173847,#0b1218);display:grid;place-items:center}
+.demo-logo{font:600 22px Georgia,serif;color:#e9c888;border:1px solid #e9c88866;border-radius:12px;padding:6px 10px}
+.demo-bar{position:absolute;left:0;right:0;bottom:0;height:42px;background:#18232c;display:flex;justify-content:space-around;align-items:center;color:#62b6ff}
+.demo-bar span:not(.demo-share){width:16px;height:3px;border-radius:2px;background:#ffffff30}
+.demo-share{display:grid;place-items:center;animation:demo-pulse 6s infinite}
+.demo-sheet{position:absolute;left:6px;right:6px;bottom:6px;background:#202c36;border-radius:14px;padding:6px;transform:translateY(120%);animation:demo-sheet 6s infinite;z-index:2}
+.demo-row{display:flex;gap:6px;align-items:center;font-size:10.5px;color:#d7e3ea;padding:8px;border-radius:8px}
+.demo-row svg{width:14px;height:14px}
+.demo-row.hl{animation:demo-hl 6s infinite}
+.demo-finger{position:absolute;width:26px;height:26px;border-radius:50%;background:#ffffffcc;box-shadow:0 0 0 6px #ffffff33;z-index:3;left:50%;top:100%;translate:-50% -50%;animation:demo-finger-ios 6s infinite}
+.android .demo-top{position:absolute;left:0;right:0;top:0;height:30px;background:#18232c;display:flex;align-items:center;gap:6px;padding:0 8px;font-size:9px;color:#9fb2bf}
+.android .demo-url{flex:1;background:#0b1218;border-radius:99px;padding:3px 8px;white-space:nowrap;overflow:hidden}
+.android .demo-dots{color:#d7e3ea;display:grid;place-items:center;animation:demo-pulse 6s infinite}
+.android .demo-dots svg{width:14px;height:14px}
+.android .demo-site{inset:36px 10px 10px}
+.demo-menu{position:absolute;right:6px;top:30px;width:140px;background:#202c36;border-radius:10px;padding:4px;transform-origin:top right;transform:scale(0);animation:demo-menu 6s infinite;z-index:2}
+.android .demo-finger{animation:demo-finger-and 6s infinite}
+@keyframes demo-pulse{0%,8%,30%,100%{transform:scale(1)}14%{transform:scale(1.35)}}
+@keyframes demo-sheet{0%,18%{transform:translateY(120%)}28%,82%{transform:translateY(0)}92%,100%{transform:translateY(120%)}}
+@keyframes demo-hl{0%,46%{background:transparent}54%,82%{background:#42a5ff33;color:#fff}100%{background:transparent}}
+@keyframes demo-menu{0%,18%{transform:scale(0)}26%,82%{transform:scale(1)}90%,100%{transform:scale(0)}}
+@keyframes demo-finger-ios{0%{left:70%;top:110%;opacity:0}8%{left:50%;top:92%;opacity:1}14%{scale:.8}18%{scale:1;left:50%;top:92%}40%{left:45%;top:73%}50%{scale:.8}54%{scale:1}70%{opacity:1}80%,100%{opacity:0;left:45%;top:73%}}
+@keyframes demo-finger-and{0%{left:60%;top:60%;opacity:0}8%{left:92%;top:7%;opacity:1}14%{scale:.8}18%{scale:1;left:92%;top:7%}40%{left:70%;top:30%}50%{scale:.8}54%{scale:1}70%{opacity:1}80%,100%{opacity:0;left:70%;top:30%}}
+@media(prefers-reduced-motion:reduce){.demo-sheet,.demo-menu{animation:none;transform:none}.demo-finger{display:none}.install-steps li{animation:none}}
+@media(max-width:480px){header{flex-wrap:wrap}.header-actions{width:100%;justify-content:flex-end}[data-install]{padding:8px 15px}.install-dialog{padding:22px 18px}.install-dialog h2{font-size:21px}}
+.mobile-nav a[data-install]{all:unset;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#e9c888;min-width:65px;min-height:48px;gap:3px;cursor:pointer}
+.mobile-nav a[data-install] svg{width:21px;height:21px}
+.mark{font-size:18px!important;letter-spacing:-.5px}

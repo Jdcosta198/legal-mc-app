@@ -1,0 +1,38 @@
+/* Motion stays decorative: no layout shifts or animated document text. */
+:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
+button,.pill,.secondary,.chips a,.resource{transition:transform .24s var(--motion-ease),background-color .24s,border-color .24s,box-shadow .24s;color-scheme:dark}
+button,.pill{position:relative;isolation:isolate}
+button:active:not(:disabled),.pill:active{transform:scale(.96)}
+button:focus-visible,.pill:focus-visible{box-shadow:0 0 0 5px #42a5ff20}
+.card,.record{transition:transform .4s var(--motion-ease),border-color .4s,box-shadow .4s}
+@media(hover:hover) and (pointer:fine){button:hover:not(:disabled),.pill:hover{transform:translateY(-2px);box-shadow:0 8px 24px #2196f329}.secondary:hover,.chips a:hover{border-color:#79bee8}.resource:hover{transform:translateX(5px)}.record:hover{transform:translateY(-4px);border-color:#739bb566;box-shadow:0 12px 32px #0003}}
+.tap-wave{position:absolute;pointer-events:none;z-index:3;width:12px;height:12px;border:2px solid #b9e6ffb3;border-radius:50%;transform:translate(-50%,-50%);animation:tap-wave .55s ease-out forwards}
+.motion-control{background:#101f29cc;border:1px solid #7797aa55;border-radius:99px;color:#c8dae5;font-size:11px;min-height:40px;padding:8px 14px;white-space:nowrap}
+.motion-control:before{content:'Ⅱ';display:inline-block;margin-right:7px;color:#80caff}.effects-paused .motion-control:before{content:'▷'}
+.motion,[data-work-motion]{display:none}
+.hero-art,.workspace-art{animation:cinematic-drift 22s ease-in-out infinite alternate!important;will-change:transform}
+.workspace-ambience{animation:ambient-drift 28s ease-in-out infinite alternate;will-change:transform}
+.workspace-hero:after,.hero:after{content:'';position:absolute;inset:-30%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 75% 25%,#62d3f21a,transparent 35%),radial-gradient(ellipse at 35% 90%,#d4b16a14,transparent 32%);animation:light-drift 14s ease-in-out infinite alternate}
+.auth-card:before{animation:login-drift 24s ease-in-out infinite alternate;transform-origin:center top}
+.work-section:not([hidden]){animation:section-enter .44s var(--motion-ease) both}
+dialog[open]{animation:dialog-enter .28s var(--motion-ease) both}
+dialog[open]::backdrop{animation:backdrop-enter .25s ease both}
+.will-reveal{opacity:0;translate:0 22px;transition:opacity .65s var(--motion-ease),translate .65s var(--motion-ease)}
+.will-reveal.is-revealed{opacity:1;translate:0 0}
+.work-dock button.selected{animation:nav-select .32s var(--motion-ease)}
+@keyframes cinematic-drift{from{transform:translate3d(var(--image-x,0px),var(--image-y,0px),0) scale(1.025)}to{transform:translate3d(calc(var(--image-x,0px) - 6px),calc(var(--image-y,0px) + 3px),0) scale(1.065)}}
+@keyframes ambient-drift{from{transform:scale(1.03) translateY(-5px)}to{transform:scale(1.08) translateY(8px)}}
+@keyframes light-drift{from{translate:-2% -1%;opacity:.35}to{translate:3% 2%;opacity:1}}
+@keyframes login-drift{from{transform:scale(1.015)}to{transform:scale(1.06)}}
+@keyframes section-enter{from{opacity:.25;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes dialog-enter{from{opacity:.2;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes backdrop-enter{from{opacity:0}to{opacity:1}}
+@keyframes tap-wave{to{opacity:0;scale:7}}
+@keyframes nav-select{from{transform:scale(.92)}to{transform:scale(1)}}
+.effects-paused *,.effects-paused *:before,.effects-paused *:after{animation-play-state:paused!important}
+.effects-paused .will-reveal{opacity:1;translate:none;transition:none}
+.effects-paused button,.effects-paused a,.effects-paused .record{transition:none}
+.effects-paused .work-section:not([hidden]),.effects-paused dialog[open]{animation:none!important}
+.effects-paused .tap-wave{display:none}
+@media(max-width:480px){header>.motion-control{margin-left:auto}.header-actions{gap:7px}.motion-control{font-size:10px;padding:7px 11px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*:before,*:after{animation:none!important;transition:none!important}.will-reveal{opacity:1;translate:none}.tap-wave{display:none}button:active,.pill:active{transform:none}}
