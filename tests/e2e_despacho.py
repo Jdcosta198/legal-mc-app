@@ -6,6 +6,10 @@ Uso: python3 tests/e2e_despacho.py   (requiere Playwright)
 """
 import json, uuid, threading, functools, http.server, socketserver, pathlib, re, sys
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta, timezone
+# Fechas relativas a hoy (hora de Costa Rica) para que la prueba no caduque.
+_CR = datetime.now(timezone(timedelta(hours=-6)))
+AYER = (_CR - timedelta(days=2)).strftime('%Y-%m-%dT09:00'); PRONTO = (_CR + timedelta(days=3)).strftime('%Y-%m-%dT10:00')
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -111,15 +115,15 @@ def run(browser, base, mejoras):
     pdf = b'%PDF-1.4\n' + b'1' * 250000
     a.set_input_files('#pdf', files=[{'name': 'escritura.pdf', 'mimeType': 'application/pdf', 'buffer': pdf}])
     check('El archivo elegido se muestra con su tamaño', 'escritura.pdf' in a.inner_text('#drop-text'))
-    a.click('#upload-form button.pill'); a.wait_for_timeout(900)
+    a.click('#upload-form button[type=submit]'); a.wait_for_timeout(900)
     check('PDF subido al almacenamiento privado y catalogado', len(be.objects) == 1 and len(be.db['documents']) == 1)
     a.set_input_files('#pdf', files=[{'name': 'falso.pdf', 'mimeType': 'application/pdf', 'buffer': b'hola'}]); a.select_option('#document-case', index=1)
-    a.click('#upload-form button.pill'); a.wait_for_timeout(300)
+    a.click('#upload-form button[type=submit]'); a.wait_for_timeout(300)
     check('Rechaza archivos que no son PDF', 'cabecera PDF' in a.inner_text('#message') and len(be.objects) == 1)
     # Agenda
-    a.click('#work-dock [data-view=events]'); a.select_option('#event-case', index=1); a.fill('#event-title', 'Presentar escritura al Registro'); a.fill('#event-date', '2026-10-20T09:00')
+    a.click('#work-dock [data-view=events]'); a.select_option('#event-case', index=1); a.fill('#event-title', 'Presentar escritura al Registro'); a.fill('#event-date', AYER)
     a.click('#event-form button.pill'); a.wait_for_timeout(500)
-    a.select_option('#event-case', index=1); a.fill('#event-title', 'Audiencia preliminar'); a.fill('#event-date', '2026-10-29T10:00'); a.click('#event-form button.pill'); a.wait_for_timeout(500)
+    a.select_option('#event-case', index=1); a.fill('#event-title', 'Audiencia preliminar'); a.fill('#event-date', PRONTO); a.click('#event-form button.pill'); a.wait_for_timeout(500)
     ev = a.inner_text('#event-list')
     check('Agenda separa vencidos y próximos 7 días', 'Vencidos (1)' in ev and 'Próximos 7 días (1)' in ev, ev[:120])
     if mejoras:
@@ -129,9 +133,37 @@ def run(browser, base, mejoras):
         check('Sin mejoras no aparece el botón "Hecho"', a.locator('#event-list .event button').count() == 0)
     with a.expect_download() as dl: a.click('#export-ics')
     check('Exporta la agenda al calendario (.ics)', dl.value.suggested_filename == 'agenda-legal-mc.ics')
+    # Calculadora de plazos (Agenda)
+    a.click('#plazo-calc summary'); a.fill('#pz-fecha', '2026-03-30'); a.select_option('#pz-medio', 'electronico'); a.select_option('#pz-preset', 'civ-ap-sent'); a.wait_for_timeout(150)
+    check('Plazos: apelación de sentencia (5 días) salta Semana Santa → jueves 9 de abril', '9 de abril de 2026' in a.inner_text('#pz-vence'), a.inner_text('#pz-out')[:200])
+    check('Plazos: explica el cómputo y los días no contados', 'Días no contados (4)' in a.inner_text('#pz-out') and 'día hábil siguiente' in a.inner_text('#pz-out'))
+    a.click('#pz-agenda'); a.wait_for_timeout(200)
+    check('Plazos: "Llevar a la agenda" llena la actuación y la fecha', a.input_value('#event-date') == '2026-04-09T16:30' and 'Apelación de sentencia' in a.input_value('#event-title'))
+    a.fill('#event-title', ''); a.fill('#event-date', '')
+    # Escáner: dos fotos → PDF de 2 páginas → se sube
+    a.click('#work-dock [data-view=documents]')
+    png = a.evaluate("""async()=>{const c=document.createElement('canvas');c.width=600;c.height=800;const g=c.getContext('2d');g.fillStyle='#ddd';g.fillRect(0,0,600,800);g.fillStyle='#222';g.font='40px serif';g.fillText('Escritura N.º 12',60,120);const b=await new Promise(r=>c.toBlob(r,'image/png'));return Array.from(new Uint8Array(await b.arrayBuffer()))}""")
+    foto = {'name': 'foto.png', 'mimeType': 'image/png', 'buffer': bytes(png)}
+    a.set_input_files('#scan-input', [foto, {**foto, 'name': 'foto2.png'}]); a.wait_for_selector('#scan-panel:not([hidden])')
+    check('Escáner: muestra las páginas fotografiadas', a.locator('#scan-pages figure').count() == 2)
+    a.click('#scan-make'); a.wait_for_timeout(400)
+    check('Escáner: el PDF queda listo para subir', 'Escaneo' in a.inner_text('#drop-text') and '.pdf' in a.inner_text('#drop-text'), a.inner_text('#drop-text'))
+    n0 = len(be.objects); a.select_option('#document-case', index=1); a.click('#upload-form button[type=submit]'); a.wait_for_timeout(800)
+    nuevo = [v for k, v in be.objects.items()][-1] if len(be.objects) > n0 else b''
+    try:
+        import pypdf, io; pdf = pypdf.PdfReader(io.BytesIO(nuevo)); paginas = len(pdf.pages)
+    except Exception as e: paginas = 0
+    check('Escáner: PDF válido de 2 páginas subido al expediente', len(be.objects) == n0 + 1 and paginas == 2, f'páginas={paginas}')
     # Inicio
     a.click('#work-dock [data-view=home]'); a.wait_for_timeout(200)
     home = a.inner_text('#view-home')
+    a.fill('#global-search', 'COMPRAVENTA quepos'); a.wait_for_timeout(100)
+    check('Búsqueda global: encuentra el expediente sin importar mayúsculas', 'Compraventa finca Quepos' in a.inner_text('#global-results'))
+    a.fill('#global-search', 'escritura'); a.wait_for_timeout(100)
+    gr = a.inner_text('#global-results')
+    check('Búsqueda global: encuentra PDF y plazos', 'escritura.pdf' in gr and 'Presentar escritura al Registro' in gr, gr[:200])
+    a.fill('#global-search', '')
+    check('Bloqueo biométrico oculto si el equipo no tiene Face ID/huella', a.locator('#lock-toggle').count() == 0)
     if not mejoras: check('Inicio avisa del plazo vencido', 'plazo vencido' in home.lower(), home[:150])
     check('Inicio muestra el último PDF', 'escritura.pdf' in home)
     a.screenshot(path=str(SHOTS / f'app-inicio-{"mejoras" if mejoras else "base"}.png'), full_page=True)
@@ -171,6 +203,22 @@ def run(browser, base, mejoras):
     d.screenshot(path=str(SHOTS / f'app-escritorio-{"mejoras" if mejoras else "base"}.png'))
     for pg in (a, d): check(f'Sin errores de JavaScript ({pg.name})', not pg.errors, '; '.join(pg.errors[:3])); pg.context.close()
 
+def bloqueo(browser, base):
+    print('\n=== Bloqueo con Face ID / huella ===')
+    be = Backend(True); local = base.replace('127.0.0.1', 'localhost')
+    p = page_for(browser, local, be, name='bloqueo')
+    cdp = p.context.new_cdp_session(p); cdp.send('WebAuthn.enable')
+    cdp.send('WebAuthn.addVirtualAuthenticator', {'options': {'protocol': 'ctap2', 'transport': 'internal', 'hasResidentKey': True, 'hasUserVerification': True, 'isUserVerified': True}})
+    login(p, local, 'licenciado@bufete.test')
+    check('Ofrece activar el bloqueo cuando hay biometría', p.is_visible('#lock-toggle'))
+    p.click('#lock-toggle'); p.wait_for_timeout(600)
+    check('Bloqueo activado (llave guardada solo en el dispositivo)', p.evaluate("!!localStorage.getItem('lmc-lock')") and 'Desactivar' in p.inner_text('#lock-toggle'))
+    p.reload(); p.wait_for_selector('.lock-screen:not([hidden])', timeout=5000)
+    check('Al abrir de nuevo pide desbloquear y oculta los datos', p.evaluate("getComputedStyle(document.getElementById('workspace')).visibility") == 'hidden' or p.is_hidden('#workspace'))
+    p.click('#lock-open'); p.wait_for_selector('.lock-screen', state='hidden', timeout=5000); p.wait_for_selector('#workspace:not([hidden])')
+    check('Desbloqueo con la biometría muestra el despacho', p.evaluate("getComputedStyle(document.getElementById('workspace')).visibility") == 'visible')
+    check('Sin errores de JavaScript (bloqueo)', not p.errors, '; '.join(p.errors[:3])); p.context.close()
+
 def landing(browser, base):
     print('\n=== Portada y descarga ===')
     be = Backend(False)
@@ -205,7 +253,7 @@ def main():
     httpd, base = serve()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
-        landing(browser, base); run(browser, base, False); run(browser, base, True)
+        landing(browser, base); run(browser, base, False); run(browser, base, True); bloqueo(browser, base)
         browser.close()
     httpd.shutdown(); failed = [r for r in results if not r[1]]
     print(f'\n{len(results) - len(failed)}/{len(results)} comprobaciones superadas'); sys.exit(1 if failed else 0)

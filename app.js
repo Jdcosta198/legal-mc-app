@@ -40,7 +40,7 @@ const caseName=id=>caseById(id)?.title||'Expediente';
 const isDone=ev=>features.done&&ev.done===true;
 
 function resetPrivate(){document.dispatchEvent(new Event('legal-signout'));epoch++;currentUser=null;profile=null;cases=[];documents=[];events=[];lastData='';
- for(const id of ['case-list','document-list','event-list','metrics','home-urgent','home-docs'])$(id).replaceChildren();for(const url of urls)URL.revokeObjectURL(url);urls.clear();
+ for(const id of ['case-list','document-list','event-list','metrics','home-urgent','home-docs','global-results'])$(id).replaceChildren();$('global-search').value='';$('global-results').hidden=true;for(const url of urls)URL.revokeObjectURL(url);urls.clear();
  $('workspace').hidden=true;$('logout').hidden=true;$('case-dialog').close();$('detail-dialog').close();$('greeting').textContent=''}
 const VIEWS=['home','cases','documents','events','library','calculator'];
 function selectView(view,{push=true}={}){if(!VIEWS.includes(view))view='home';for(const name of VIEWS)$('view-'+name).hidden=name!==view;
@@ -63,6 +63,21 @@ function renderHome(){
  const urgent=[...overdue,...weekList].sort((a,b)=>new Date(a.due_at)-new Date(b.due_at)).slice(0,6);
  if(!urgent.length)empty($('home-urgent'),'Sin plazos en los próximos 7 días.');else $('home-urgent').replaceChildren(...urgent.map(eventRow));
  const docs=documents.slice(0,5);if(!docs.length)empty($('home-docs'),'Todavía no hay documentos.');else $('home-docs').replaceChildren(...docs.map(d=>{const r=h('div',{class:'mini'},h('span',{class:'mini-ic',text:'PDF'}),h('div',{class:'mini-body'},h('strong',{text:d.filename}),h('small',{text:caseName(d.case_id)+' · '+date(d.created_at)})));r.append(action('Ver',()=>openPdf(d,'view')));return r}))}
+
+// ---------- Búsqueda global (sin tildes ni mayúsculas) ----------
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');
+function renderSearch(){const raw=$('global-search').value.trim(),box=$('global-results');if(raw.length<2){box.hidden=true;box.replaceChildren();return}
+ const terms=norm(raw).split(/\s+/),hit=txt=>{const t=norm(txt);return terms.every(w=>t.includes(w))};
+ const cs=cases.filter(c=>hit([c.title,c.reference,c.client_name,c.area,c.notes].join(' '))).slice(0,8);
+ const ds=documents.filter(d=>hit(d.filename+' '+caseName(d.case_id))).slice(0,8);
+ const es=events.filter(e=>hit(e.title+' '+caseName(e.case_id))).sort((a,b)=>new Date(b.due_at)-new Date(a.due_at)).slice(0,8);
+ const group=(title,items)=>items.length?[h('p',{class:'gs-title',text:title+' ('+items.length+')'}),...items]:[];
+ const row=(ic,main,sub,fn)=>{const b=h('button',{type:'button',class:'gs-row'},h('span',{class:'mini-ic',text:ic}),h('span',{class:'mini-body'},h('strong',{text:main}),h('small',{text:sub})));b.onclick=()=>{try{fn()}catch(e){fail(e)}};return b};
+ const out=[...group('Expedientes',cs.map(c=>row('EXP',c.title,[c.reference,c.client_name,c.area,c.status==='closed'?'Cerrado':'Activo'].filter(Boolean).join(' · '),()=>openDetail(c)))),
+  ...group('Documentos',ds.map(d=>row('PDF',d.filename,caseName(d.case_id)+' · '+date(d.created_at),()=>openPdf(d,'view').catch(fail)))),
+  ...group('Agenda',es.map(e=>row(isDone(e)?'✓':'◷',e.title,caseName(e.case_id)+' · '+date(e.due_at),()=>{const c=caseById(e.case_id);if(c)openDetail(c);else selectView('events')})))];
+ box.hidden=false;box.replaceChildren(...(out.length?out:[h('p',{class:'empty',text:'Sin resultados para «'+raw+'».'})]))}
+$('global-search').oninput=renderSearch;
 
 // ---------- Expedientes ----------
 function caseCard(c){const docs=documents.filter(d=>d.case_id===c.id).length;const evs=events.filter(e=>e.case_id===c.id&&!isDone(e));const next=evs.filter(e=>new Date(e.due_at)>=new Date()).sort((a,b)=>new Date(a.due_at)-new Date(b.due_at))[0];const late=evs.some(e=>new Date(e.due_at)<new Date());
@@ -130,7 +145,7 @@ async function detectFeatures(){if(features.checked)return;features.checked=true
  const probe=async(table,cols)=>{const r=await client.from(table).select(cols).limit(1);return !r.error};
  const [d,c,q]=await Promise.all([probe('events','done'),probe('cases','client_name,area,notes'),probe('quotes','id')]);features.done=d;features.caseExtra=c;features.quotes=q;
  $('case-extra').hidden=!c;document.dispatchEvent(new CustomEvent('legal-features',{detail:{...features}}))}
-function renderAll(){fillCaseSelects();renderHome();renderCases();renderDocuments();renderEvents()}
+function renderAll(){fillCaseSelects();renderHome();renderCases();renderDocuments();renderEvents();renderSearch()}
 async function refresh(force=false){
  if(!currentUser||loading||(document.hidden&&!force))return;
  if(!navigator.onLine){$('sync-status').textContent='Sin conexión · Los cambios no se guardan fuera de línea.';$('net').hidden=false;return}

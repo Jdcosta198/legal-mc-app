@@ -86,14 +86,16 @@ function attach(img){if(img.dataset.living)return;img.dataset.living='1';const h
  if(img.complete&&img.naturalWidth)start();else img.addEventListener('load',start,{once:true})}
 
 function focusOf(img){const pos=getComputedStyle(img).objectPosition.split(' ');const f=x=>x==='left'||x==='top'?0:x==='right'||x==='bottom'?1:x==='center'?.5:x.endsWith('%')?parseFloat(x)/100:.5;return[f(pos[0]||'50%'),f(pos[1]||'50%')]}
-let running=false,last=0,acc=0;const t0=performance.now();
+let running=false,last=0,acc=0,ema=1/60,quality=1,checkAt=0;const t0=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.1,(now-last)/1000||0);last=now;
  if(document.hidden)return;
+ // Calidad adaptable: si el equipo no sostiene la animación, baja la resolución del lienzo (no la fluidez).
+ if(dt>0&&dt<.1)ema=ema*.94+dt*.06;if(now>checkAt){checkAt=now+2500;if(ema>1/24&&quality>.5)quality=Math.max(.5,quality-.25);else if(ema<1/52&&quality<1)quality=Math.min(1,quality+.125)}
  const mobile=innerWidth<800;acc+=dt;if(mobile&&acc<1/30)return;const step=acc;acc=0;
  pointer[0]+=(target[0]-pointer[0])*Math.min(1,step*3);pointer[1]+=(target[1]-pointer[1])*Math.min(1,step*3);
  const still=paused(),t=(now-t0)/1000;
  for(const s of scenes){if(!s.visible)continue;const r=s.cv.getBoundingClientRect();if(!r.width)continue;
-  const dpr=Math.min(devicePixelRatio||1,mobile?1.25:1.5),w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  const dpr=Math.min(devicePixelRatio||1,mobile?1.25:1.5)*quality,w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
   if(w!==s.w||h!==s.h){s.w=w;s.h=h;s.cv.width=w;s.cv.height=h;s.pc.width=w;s.pc.height=h;s.gl.viewport(0,0,w,h);s.drawn=false}
   if(still&&s.drawn)continue;
   const {gl,u}=s;const f=focusOf(s.img);gl.uniform1i(u.img,0);gl.uniform1f(u.t,still?0:t);gl.uniform2f(u.res,w,h);gl.uniform2f(u.imgSize,s.img.naturalWidth,s.img.naturalHeight);gl.uniform2f(u.focus,f[0],f[1]);gl.uniform2f(u.tilt,still?0:pointer[0],still?0:pointer[1]);gl.uniform1f(u.intensity,still?0:1);
@@ -102,5 +104,5 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.1,(now-last)/1
 
 function scan(){document.querySelectorAll('img[data-living-art]').forEach(attach)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan);else scan();
-window.LivingArt={scan,scenes};
+window.LivingArt={scan,scenes,get quality(){return quality}};
 })();

@@ -16,6 +16,10 @@ Usa la **misma base de datos de Supabase que la versión publicada**: no se pier
 | Expedientes | Título, referencia, estado | Ficha con PDF y plazos, filtro activos/cerrados, **cliente, materia y notas*** |
 | Documentos | Solo descargar | **Ver sin descargar**, búsqueda, barra de progreso, arrastrar y soltar |
 | Calculadora | Referencias básicas; timbres a mano | **Calculadora Jurídica CR completa**: 160 actuaciones, 280 trabajos por materia, timbres e impuestos notariales, mínimo del Arancel, proforma A4, WhatsApp, historial |
+| Plazos | Cálculo a mano | **Calculadora de vencimientos**: días hábiles de Costa Rica, feriados (incluye Semana Santa calculada), notificación electrónica (art. 38 Ley 8687), cierres opcionales, fecha recomendada y paso directo a la agenda |
+| Búsqueda | Por sección | **Búsqueda global** en expedientes, clientes, PDF y plazos (sin importar tildes) |
+| Documentos en papel | — | **Escanear con la cámara** varias páginas y convertirlas en PDF dentro del teléfono |
+| Seguridad | Solo contraseña | **Bloqueo con Face ID, Touch ID o huella** al abrir la app y tras 5 minutos sin usarla |
 | Sesión | Se cerraba al cerrar el navegador | Opción **Mantener la sesión** (activada por defecto en la app instalada) |
 | Sincronización | Redibujaba todo cada 20 s | Solo cuando hay cambios: no se pierde lo que se está escribiendo |
 
@@ -62,8 +66,8 @@ Compilar a mano (opcional): `cd native && npm ci && npm run sync && npx cap open
 ## 5. Pruebas
 
 ```bash
-npm test                         # calculadora: 4.800 cálculos idénticos a la original + casos a mano
-python3 tests/e2e_despacho.py    # 60 comprobaciones en navegador (portada, descarga, despacho con y sin mejoras)
+npm test                         # calculadora (4.800 cálculos idénticos a la original) y plazos procesales
+python3 tests/e2e_despacho.py    # 83 comprobaciones en navegador (portada, descarga, despacho, plazos, escáner, bloqueo)
 python3 tests/sql/test_mejoras.py  # 16 pruebas de permisos de la mejora de base de datos (PostgreSQL)
 ```
 
