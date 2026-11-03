@@ -20,6 +20,7 @@
     "@capacitor/share": "^7.0.4",
     "@capacitor/splash-screen": "^7.0.5",
     "@capacitor/status-bar": "^7.0.6",
-    "@capawesome-team/capacitor-file-opener": "^7.0.1"
+    "@capawesome-team/capacitor-file-opener": "^7.0.1",
+    "@capgo/inappbrowser": "^7.29.4"
   }
 }

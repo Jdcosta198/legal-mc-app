@@ -249,11 +249,54 @@ def landing(browser, base):
     check('Manifiesto con íconos normales y adaptables (Android)', any(i.get('purpose') == 'maskable' for i in m['icons']) and any(i['sizes'] == '512x512' for i in m['icons']))
     for pg in (p, q, r, w): check(f'Sin errores de JavaScript ({pg.name})', not pg.errors, '; '.join(pg.errors[:3])); pg.context.close()
 
+def registro(browser, base):
+    """Sección Registro en la web: formulario, ventana de rnpdigital (simulada), favorito, consulta y guardado del PDF."""
+    print('\n=== Registro Nacional (web) ===')
+    sys.path.insert(0, str(ROOT / 'tests')); import registro_bot_test as RB
+    be = Backend(True); sitio = RB.Sitio()
+    a = page_for(browser, base, be, name='Registro iPhone'); a.context.route('https://www.rnpdigital.com/**', sitio.handle)
+    login(a, base, 'licenciado@bufete.test')
+    a.click('[data-quick=case]'); a.fill('#case-title', 'Compraventa finca Heredia'); a.click('#case-form button.pill'); a.wait_for_timeout(500)
+    a.click('#work-dock [data-view=registro]'); a.wait_for_timeout(300)
+    check('Registro: la sección abre desde la barra inferior', a.is_visible('#view-registro') and a.locator('.reg-item').count() >= 10)
+    check('Registro: en la web explica el favorito', a.is_visible('#reg-web') and a.get_attribute('#reg-favorito', 'href').startswith('javascript:'))
+    a.fill('#reg-q', '4-179693-002'); a.click('#reg-rapido button[type=submit]'); a.wait_for_timeout(400)
+    check('Registro: la consulta rápida reconoce la finca', a.input_value('#reg-f-provincia') == '4' and a.input_value('#reg-f-numero') == '179693' and a.input_value('#reg-f-derecho') == '002')
+    a.screenshot(path=str(SHOTS / 'registro-movil.png'), full_page=False)
+    a.fill('#reg-f-numero', ''); a.click('#reg-form button[type=submit]'); a.wait_for_timeout(200)
+    check('Registro: valida antes de abrir el Registro', 'Falta' in a.inner_text('#reg-estado') and a.locator('[data-k=numero].invalid').count() == 1)
+    a.fill('#reg-f-numero', '179693'); a.select_option('#reg-caso', index=1)
+    with a.context.expect_page() as info: a.click('#reg-form button[type=submit]')
+    pop = info.value; pop.wait_for_load_state()
+    check('Registro: abre rnpdigital.com en otra ventana', pop.url.startswith('https://www.rnpdigital.com/shopping/consultaDocumentos/paramConsultaFinca.jspx'))
+    fav = a.get_attribute('#reg-favorito', 'href')[len('javascript:'):]
+    pop.evaluate(fav); pop.wait_for_timeout(300)
+    for _ in range(40):
+        if any(pth.endswith('RespConsultaNumeroFinca.jspx') for pth, _f in sitio.posts): break
+        pop.wait_for_timeout(250)
+    envio = [f for pth, f in sitio.posts if pth.endswith('RespConsultaNumeroFinca.jspx')]
+    check('Registro: el favorito recibe el asistente de la app y consulta', envio and envio[0].get('params:finca') == ['179693'] and envio[0].get('params:j_id314') == ['002'], str(sitio.posts[-1:]))
+    pop.wait_for_load_state(); pop.wait_for_timeout(300)
+    pop.evaluate(fav)
+    for _ in range(40):
+        if be.db['documents']: break
+        a.wait_for_timeout(250)
+    docs = be.db['documents']
+    check('Registro: el resultado se guarda como PDF en el expediente', docs and docs[0]['filename'].startswith('Registro - Finca por número 4-179693-002') and docs[0]['case_id'] == be.db['cases'][0]['id'], str(docs[:1]))
+    pdf = next(iter(be.objects.values()), b'')
+    check('Registro: el PDF es válido y trae el texto del Registro', pdf[:5] == b'%PDF-' and b'179693' in pdf and b'JUAN DIEGO CORTES ESPINOZA' in pdf)
+    a.wait_for_timeout(500)
+    check('Registro: queda en el historial como guardado', 'Guardado' in a.inner_text('#reg-historial'))
+    check('Registro: el asistente confirma en la página del Registro', 'Guardado' in pop.evaluate("document.getElementById('lmc-barra-host').shadowRoot.getElementById('st').textContent"))
+    a.screenshot(path=str(SHOTS / 'registro-guardado.png'), full_page=False)
+    check('Sin errores de JavaScript (Registro)', not a.errors, '; '.join(a.errors[:3]))
+    a.context.close()
+
 def main():
     httpd, base = serve()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(args=['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
-        landing(browser, base); run(browser, base, False); run(browser, base, True); bloqueo(browser, base)
+        landing(browser, base); run(browser, base, False); run(browser, base, True); bloqueo(browser, base); registro(browser, base)
         browser.close()
     httpd.shutdown(); failed = [r for r in results if not r[1]]
     print(f'\n{len(results) - len(failed)}/{len(results)} comprobaciones superadas'); sys.exit(1 if failed else 0)

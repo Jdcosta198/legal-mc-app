@@ -63,6 +63,27 @@ Con el repositorio en GitHub, las compilaciones se hacen solas en **Actions**:
 
 Compilar a mano (opcional): `cd native && npm ci && npm run sync && npx cap open android` (Android Studio) o `npx cap open ios` (Xcode en Mac).
 
+## Consultas al Registro Nacional (sección «Registro»)
+
+Las 39 consultas gratuitas de **rnpdigital.com** (propiedades, vehículos y otros muebles, planos, sociedades, marcas y patentes),
+hechas con el **usuario de rnpdigital de cada profesional**. El resultado se guarda como PDF en el expediente.
+
+- **App de Android:** el Registro se abre dentro de la app. El asistente (`registro-bot.js`) entra a la consulta, la llena,
+  toca «Consultar», espera el resultado y lo devuelve; la app arma el PDF y lo sube al expediente elegido.
+- **Computadora / iPhone (web):** el Registro se abre en otra ventana y el asistente se activa con el favorito
+  «⚖ Legal M&C · Registro» (rnpdigital.com no permite cargar scripts de otros sitios; el favorito recibe el código de la app).
+- **Contraseña:** se escribe solo en la página del Registro. La app no la pide, no la guarda y no la envía a ningún servidor.
+- **Protección de la cuenta:** el Registro bloquea la cuenta con más de 10 consultas en 2 minutos; el asistente permite 8
+  y cuenta también los clics hechos a mano. Nunca toca «Comprar».
+- Las consultas se hacen desde el teléfono o la computadora de la persona (el Registro rechaza servidores externos).
+
+Archivos: `registro-catalogo.js` (consultas, lectura de números y validación), `registro-pdf.js` (PDF),
+`registro/bot.js` (asistente), `registro-ui.js` + `registro.css` (pantalla), `registro-puente.*` (favorito sin app al lado).
+`registro-bot.js` se genera con `node scripts/build-bot.mjs`.
+
+Pruebas: `npm test` (catálogo y PDF), `python3 tests/registro_bot_test.py` (asistente contra páginas simuladas del Registro,
+incluido Prototype 1.6 que usa el sitio) y la sección «Registro» de `tests/e2e_despacho.py` (flujo web completo hasta el PDF en el expediente).
+
 ## 5. Pruebas
 
 ```bash

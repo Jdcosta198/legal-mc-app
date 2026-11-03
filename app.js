@@ -42,11 +42,11 @@ const isDone=ev=>features.done&&ev.done===true;
 function resetPrivate(){document.dispatchEvent(new Event('legal-signout'));epoch++;currentUser=null;profile=null;cases=[];documents=[];events=[];lastData='';
  for(const id of ['case-list','document-list','event-list','metrics','home-urgent','home-docs','global-results'])$(id).replaceChildren();$('global-search').value='';$('global-results').hidden=true;for(const url of urls)URL.revokeObjectURL(url);urls.clear();
  $('workspace').hidden=true;$('logout').hidden=true;$('case-dialog').close();$('detail-dialog').close();$('greeting').textContent=''}
-const VIEWS=['home','cases','documents','events','library','calculator'];
+const VIEWS=['home','cases','documents','events','library','calculator','registro'];
 function selectView(view,{push=true}={}){if(!VIEWS.includes(view))view='home';for(const name of VIEWS)$('view-'+name).hidden=name!==view;
  document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('selected',b.dataset.view===view);b.setAttribute('aria-current',b.dataset.view===view?'page':'false')});
  if(push){const u=new URL(location.href);u.searchParams.set('view',view);history.replaceState(null,'',u.pathname+u.search+location.hash)}
- if(view==='calculator')document.dispatchEvent(new Event('legal-calc-show'))}
+ if(view==='calculator')document.dispatchEvent(new Event('legal-calc-show'));if(view==='registro')document.dispatchEvent(new Event('legal-registro-show'))}
 
 // ---------- Inicio ----------
 function renderHome(){
@@ -196,14 +196,21 @@ $('case-form').onsubmit=event=>{event.preventDefault();busy(event.currentTarget,
  let r;if(editing){r=await client.from('cases').update({...values,updated_at:new Date().toISOString()}).eq('id',editing.id).eq('updated_at',editing.updated_at).select('id');if(!r.error&&!r.data.length){message('Otro profesional modificó este expediente. Cierra este formulario, actualiza y vuelve a editar.',true);return}}
  else{r=await client.from('cases').insert({...values,created_by:currentUser.id}).select('id')}
  if(r.error)throw r.error;$('case-dialog').close();message('Expediente guardado en el despacho compartido.');await refresh(true)})};
+// Sube un PDF al expediente (lo usan el formulario de Documentos y la sección Registro).
+async function guardarPdf(caseId,file,{barra=true}={}){
+ if(!currentUser)throw Object.assign(new Error('Sin sesión'),{status:401});
+ if(!caseById(caseId))throw new Error('Ese expediente ya no existe o no tenés acceso.');
+ if(file.size===0||file.size>MAX_PDF)throw new Error('El PDF debe contener datos y no superar 20 MB.');
+ const magic=new TextDecoder().decode(await file.slice(0,5).arrayBuffer());if(magic!=='%PDF-')throw new Error('El archivo no tiene una cabecera PDF válida.');
+ const id=crypto.randomUUID(),path=caseId+'/'+id+'.pdf';const prog=barra?setProgress:()=>{};prog(0);
+ try{try{await uploadWithProgress(path,file,prog)}catch(e){if(e.status&&e.status!==0)throw e;const up=await client.storage.from(BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false,cacheControl:'0'});if(up.error)throw up.error}
+  const metadata=await client.from('documents').insert({id,case_id:caseId,filename:file.name.slice(0,240),object_path:path,byte_size:file.size,uploaded_by:currentUser.id}).select('*').single();
+  if(metadata.error){await client.storage.from(BUCKET).remove([path]);throw metadata.error}
+  return metadata.data}
+ finally{prog(null)}}
 $('upload-form').onsubmit=event=>{event.preventDefault();busy(event.currentTarget,async()=>{const file=$('pdf').files[0],caseId=$('document-case').value;if(!file||!caseId)return;
- if(file.size===0||file.size>MAX_PDF){message('El PDF debe contener datos y no superar 20 MB.',true);return}
- const magic=new TextDecoder().decode(await file.slice(0,5).arrayBuffer());if(magic!=='%PDF-'){message('El archivo no tiene una cabecera PDF válida.',true);return}
- const id=crypto.randomUUID(),path=caseId+'/'+id+'.pdf';message('Subiendo PDF privado…');setProgress(0);
- try{try{await uploadWithProgress(path,file,setProgress)}catch(e){if(e.status&&e.status!==0)throw e;const up=await client.storage.from(BUCKET).upload(path,file,{contentType:'application/pdf',upsert:false,cacheControl:'0'});if(up.error)throw up.error}
-  const metadata=await client.from('documents').insert({id,case_id:caseId,filename:file.name.slice(0,240),object_path:path,byte_size:file.size,uploaded_by:currentUser.id});
-  if(metadata.error){await client.storage.from(BUCKET).remove([path]);throw metadata.error}}
- finally{setProgress(null)}
+ message('Subiendo PDF privado…');
+ try{await guardarPdf(caseId,file)}catch(e){if(e instanceof Error&&!e.status&&!e.code){message(e.message,true);return}throw e}
  $('upload-form').reset();$('pdf').dispatchEvent(new Event('change'));message('PDF guardado. El otro profesional lo verá al actualizar o en la siguiente sincronización.');await refresh(true)})};
 $('event-form').onsubmit=event=>{event.preventDefault();busy(event.currentTarget,async()=>{const title=$('event-title').value.trim();if(!title){message('Escribe el nombre de la actuación.',true);return}
  const due=new Date($('event-date').value);if(Number.isNaN(due.getTime())){message('Elegí una fecha válida.',true);return}
@@ -220,6 +227,9 @@ window.LegalDespacho={
  listeners:new Set(),notify(){for(const f of this.listeners)try{f()}catch{}},
  async saveQuote(row){const r=await client.from('quotes').insert({...row,created_by:currentUser.id}).select('*').single();if(r.error)throw r.error;return r.data},
  async listQuotes(){const r=await client.from('quotes').select('*').order('created_at',{ascending:false}).limit(200);if(r.error)throw r.error;return r.data},
+ get documents(){return documents},selectView:v=>selectView(v),
+ async subirPdf(caseId,file){const d=await guardarPdf(caseId,file,{barra:false});await refresh(true);return d},
+ openDocument(id,mode='view'){const d=documents.find(x=>x.id===id);if(d)return openPdf(d,mode)},
  message,fail};
 
 client.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY')passwordFlow=true;if(event==='SIGNED_OUT'){resetPrivate();$('login').hidden=false}if(['SIGNED_IN','PASSWORD_RECOVERY','INITIAL_SESSION'].includes(event))setTimeout(()=>showSession(session).catch(fail),0)});
