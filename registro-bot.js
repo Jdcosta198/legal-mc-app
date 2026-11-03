@@ -275,8 +275,15 @@ const R=globalThis.RegistroCatalogo,PDF=globalThis.RegistroPDF;
 if(window.__lmcBot){if(window.__lmcPendiente){const j=window.__lmcPendiente;window.__lmcPendiente=null;window.__lmcBot.iniciar(j)}return}
 const nativo=!!(window.mobileApp&&typeof window.mobileApp.postMessage==='function');
 const KEY='lmc-registro-trabajo',HITS='lmc-registro-consultas';
-const ss={get(k){try{return JSON.parse(sessionStorage.getItem(k)||'null')}catch{return null}},set(k,v){try{sessionStorage.setItem(k,JSON.stringify(v))}catch{}},del(k){try{sessionStorage.removeItem(k)}catch{}}};
-const ls={get(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+// El Registro usa Prototype 1.6, que agrega toJSON a Array/String/Number/Date y hace que JSON.stringify
+// convierta las listas en texto ("[1, 2]"). Mientras el asistente serializa algo, esos toJSON se quitan y luego se restauran.
+const PROTOS=[Array.prototype,String.prototype,Number.prototype,Boolean.prototype,Date.prototype];
+function sinPrototype(fn){const g=PROTOS.map(p=>[p,Object.getOwnPropertyDescriptor(p,'toJSON')]).filter(x=>x[1]&&x[1].configurable);
+ for(const [p] of g)delete p.toJSON;try{return fn()}finally{for(const [p,d] of g)Object.defineProperty(p,'toJSON',d)}}
+const json=v=>sinPrototype(()=>JSON.stringify(v));
+const leer=t=>{let v=JSON.parse(t||'null');if(typeof v==='string'&&/^[\[{]/.test(v))try{v=JSON.parse(v)}catch{}return v};
+const ss={get(k){try{return leer(sessionStorage.getItem(k))}catch{return null}},set(k,v){try{sessionStorage.setItem(k,json(v))}catch{}},del(k){try{sessionStorage.removeItem(k)}catch{}}};
+const ls={get(k){try{return leer(localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k,json(v))}catch{}}};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const vis=e=>!!(e&&(e.offsetWidth||e.offsetHeight||e.getClientRects().length))&&getComputedStyle(e).visibility!=='hidden';
 const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
@@ -284,7 +291,7 @@ let trabajo=null,ocupado=false;
 
 /* ---------- Comunicación con la app ---------- */
 function enviar(tipo,datos={}){const m={lmc:1,tipo,trabajo:trabajo&&trabajo.id,...datos};
- try{if(nativo)window.mobileApp.postMessage({detail:m});else if(window.opener&&trabajo&&trabajo.origen)window.opener.postMessage(m,trabajo.origen)}catch{}}
+ try{sinPrototype(()=>{if(nativo)window.mobileApp.postMessage({detail:m});else if(window.opener&&trabajo&&trabajo.origen)window.opener.postMessage(m,trabajo.origen)})}catch{}}
 function alRecibir(m){if(!m||!m.lmc)return;
  if(m.tipo==='guardado'){barra.estado(m.ok?`✓ Guardado en el expediente: ${m.nombre||''}`:'No se pudo guardar: '+(m.error||'error desconocido'),m.ok?'ok':'error');if(m.ok&&trabajo){trabajo.guardado=true;ss.set(KEY,trabajo)}}
  if(m.tipo==='iniciar'&&m.trabajo)iniciar(m.trabajo)}
@@ -293,7 +300,7 @@ window.addEventListener('message',e=>{if(trabajo&&trabajo.origen&&e.origin===tra
 
 /* ---------- Límite de consultas (protege la cuenta) ---------- */
 const LIM=R.LIMITE;
-function consultasRecientes(){const ahora=Date.now();return (ls.get(HITS)||[]).filter(t=>ahora-t<LIM.ventanaMs)}
+function consultasRecientes(){const ahora=Date.now();let l=ls.get(HITS);if(!Array.isArray(l))l=[];return l.map(Number).filter(t=>ahora-t<LIM.ventanaMs)}
 function registrarConsulta(){const l=consultasRecientes();l.push(Date.now());ls.set(HITS,l);barra.contador();enviar('consulta',{recientes:l.length})}
 function esperaNecesaria(){const l=consultasRecientes();if(l.length<LIM.maximo)return 0;return Math.max(0,LIM.ventanaMs-(Date.now()-l[0]))+1500}
 // Cuenta también lo que la persona toque a mano: botones "Consultar/Buscar" y enlaces dentro de los resultados.
@@ -440,7 +447,7 @@ const barra=(()=>{let host,root,$=()=>null;
  button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #88ceff;outline-offset:2px}
  .min .row,.min .cnt{display:none}.x{padding:6px 10px;min-height:32px}`;
  function montar(){if(host)return;host=document.createElement('div');host.id='lmc-barra-host';root=host.attachShadow({mode:'open'});
-  const casos=(trabajo&&trabajo.casos)||[];const conApp=nativo||(window.opener&&trabajo&&trabajo.origen);
+  let casos=(trabajo&&trabajo.casos)||[];if(typeof casos==='string')try{casos=JSON.parse(casos)}catch{casos=[]}if(!Array.isArray(casos))casos=[];const conApp=nativo||(window.opener&&trabajo&&trabajo.origen);
   root.innerHTML=`<style>${css}</style><div class="b" role="region" aria-label="Asistente de consultas de Legal M&C">
   <div class="top"><span class="logo">⚖ LEGAL M&amp;C</span><span class="st" id="st" role="status" aria-live="polite">Asistente del Registro listo.</span><span class="cnt" id="cnt"></span><button class="x" id="min" aria-label="Minimizar">–</button></div>
   ${!trabajo?`<div class="row"><input id="rapido" placeholder="Finca, placa, cédula o plano (ej. 4-179693-002)" aria-label="Número a consultar"><button class="gold" id="ir">Consultar</button></div>`:''}
