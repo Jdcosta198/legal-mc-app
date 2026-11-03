@@ -50,7 +50,7 @@ function leerCitas(txt){const p=solo(txt).split(/[\s\-\/]+/).filter(Boolean);if(
 // t: tipo de control · k: clave · l: etiqueta · req: obligatorio · ph: ejemplo · max: largo · ops: opciones [valor,texto]
 const C={
  prov:{t:'sel',k:'provincia',l:'Provincia',req:1,ops:PROV},
- num:{t:'txt',k:'numero',l:'Número de finca (matrícula)',req:1,ph:'179693',max:8,dig:1},
+ num:{t:'txt',k:'numero',l:'Número de finca',req:1,ph:'179693',max:8,dig:1},
  dup:{t:'sel',k:'duplicado',l:'Duplicado',ops:[['','—']].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(x=>[x,x]))},
  hor:{t:'sel',k:'horizontal',l:'Horizontal',ops:[['','—'],['F','F (filial)'],['M','M (matriz)']]},
  der:{t:'txt',k:'derecho',l:'Derecho',ph:'000',max:3,dig:1,ayuda:'Vacío para ver todos los derechos; 000 si la finca no tiene derechos.'},
