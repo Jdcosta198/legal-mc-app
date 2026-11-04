@@ -1,0 +1,9 @@
+/* Capa de "imagen viva": el lienzo WebGL ocupa el lugar exacto de la imagen original. */
+.living-art,.living-dust{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.living-art{z-index:-3}
+.living-dust{z-index:-1;mix-blend-mode:screen}
+.is-living>img[data-living-art]{visibility:hidden;animation:none!important}
+.auth-art{position:absolute;inset:0 0 auto;height:270px;overflow:hidden;z-index:-1;isolation:isolate;border-radius:inherit}
+.auth-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right 20%;z-index:-3}
+.auth-art:after{content:'';position:absolute;inset:0;z-index:-2;background:linear-gradient(0deg,#14212b 2%,#14212b00 70%)}
+.legal-workspace .auth-card.has-art:before{display:none}
