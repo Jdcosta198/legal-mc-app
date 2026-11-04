@@ -56,8 +56,11 @@ const enLogin=()=>[...document.querySelectorAll('input[type=password]')].some(vi
 const procesando=()=>/su petici[oó]n esta siendo ejecutada/i.test(document.body.innerText);
 function botonConsultar(){
  const cands=[...document.querySelectorAll('#central img[alt],#central input[type=button],#central input[type=submit],#central a, img[alt], input[type=button], input[type=submit]')].filter(vis);
- for(const c of cands){const t=norm(c.alt||c.value||c.innerText);if(t==='consultar'||t==='buscar'){const el=c.tagName==='IMG'?(c.closest('a')||c):c;if(el.closest('#lmc-barra-host'))continue;return el}}return null}
-const formulario=()=>{const b=botonConsultar();return b&&b.closest('form')};
+ for(const c of cands){const t=norm(c.alt||c.value||c.innerText);if(t==='consultar'||t==='buscar'||(t==='emitir'&&/\/consultaDocumentos\//.test(location.pathname))){const el=c.tagName==='IMG'?(c.closest('a')||c):c;if(el.closest('#lmc-barra-host'))continue;return el}}return null}
+// El formulario de la consulta: el del botón Consultar o, si el botón aparece después de elegir el tipo
+// de búsqueda (p. ej. Personas por Nombre en Bienes Muebles), el formulario visible dentro de #central.
+const formulario=()=>{const b=botonConsultar();if(b)return b.closest('form');const c=document.getElementById('central');if(!c)return null;
+ return [...c.querySelectorAll('form')].find(f=>[...f.querySelectorAll('select,input[type=text]')].some(vis))||null};
 function hallar(m,tipo){const f=formulario();if(!f)return null;
  const els=[...f.querySelectorAll(tipo==='s'?'select':'input[type=text],input:not([type]),textarea')].filter(vis);
  if(m.n)return els.find(e=>e.name===m.n)||null;
@@ -121,9 +124,10 @@ async function avanzar(){
    return}
   if(f==='llegando'){
    // Esperar a que aparezca el formulario de la consulta (la página puede tardar o cargar por partes).
-   for(let k=0;k<40&&!botonConsultar();k++)await sleep(200);
-   const primero=trabajo.pasos&&trabajo.pasos[0],hay=primero&&hallar(primero.s||primero.t,primero.s?'s':'t');
-   if(!botonConsultar()||(primero&&!hay&&!primero.espera&&!primero.s)){
+   const primero=trabajo.pasos&&trabajo.pasos[0],buscar1=()=>primero&&hallar(primero.s||primero.t,primero.s?'s':'t');
+   for(let k=0;k<40&&!botonConsultar()&&!(primero&&primero.s&&buscar1());k++)await sleep(200);
+   const hay=buscar1();
+   if((!botonConsultar()&&!(primero&&primero.s&&hay))||(primero&&!hay&&!primero.espera&&!primero.s)){
     if(Date.now()-(trabajo.marca&&trabajo.marca.t||0)>15000){trabajo.fase='ir';guardarTrabajo();irAlIndice()}
     return}
    trabajo.fase='llenar';guardarTrabajo()}
