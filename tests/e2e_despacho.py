@@ -282,7 +282,8 @@ def registro(browser, base):
         if be.db['documents']: break
         a.wait_for_timeout(250)
     docs = be.db['documents']
-    check('Registro: el resultado se guarda como PDF en el expediente', docs and docs[0]['filename'].startswith('Registro - Finca por número 4-179693-002') and docs[0]['case_id'] == be.db['cases'][0]['id'], str(docs[:1]))
+    a.wait_for_timeout(1500); docs = be.db['documents']
+    check('Registro: el resultado se guarda como PDF en el expediente (una sola vez)', len(docs) == 1 and docs[0]['filename'].startswith('Registro - Finca por número 4-179693-002') and docs[0]['case_id'] == be.db['cases'][0]['id'], str(docs[:1]))
     pdf = next(iter(be.objects.values()), b'')
     check('Registro: el PDF es válido y trae el texto del Registro', pdf[:5] == b'%PDF-' and b'179693' in pdf and b'JUAN DIEGO CORTES ESPINOZA' in pdf)
     a.wait_for_timeout(500)

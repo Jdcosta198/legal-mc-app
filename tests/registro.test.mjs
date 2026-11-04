@@ -7,9 +7,9 @@ await import('../registro-catalogo.js');
 await import('../registro-pdf.js');
 const R = globalThis.RegistroCatalogo, P = globalThis.RegistroPDF;
 
-test('el catálogo cubre las 39 consultas gratuitas, sin repetir identificadores', () => {
-  assert.equal(R.CONSULTAS.length, 39);
-  assert.equal(new Set(R.CONSULTAS.map(c => c.id)).size, 39);
+test('el catálogo cubre las 45 consultas gratuitas, sin repetir identificadores', () => {
+  assert.equal(R.CONSULTAS.length, 45);
+  assert.equal(new Set(R.CONSULTAS.map(c => c.id)).size, 45);
   for (const c of R.CONSULTAS) {
     assert.ok(R.SECCIONES.some(s => s[0] === c.sec), c.id);
     assert.ok(c.link && c.campos.length && typeof c.plan === 'function', c.id);
@@ -71,7 +71,7 @@ test('valida antes de consultar (no gasta consultas con datos malos)', () => {
 
 test('todas las consultas generan pasos con datos de ejemplo', () => {
   const ej = { provincia: '1', numero: '12345', tomo: '2014', asiento: '29235', consecutivo: '1', secuencia: '1', cedula: '3-101-123456', nombre: 'PRUEBA',
-    tipoId: '1', id: '1-1234-1234', tipoNombre: '1', por: 'PLA', placa: 'BKN-216', valor: 'X1', plano: 'SJ-12345-2001', serie: '2024' };
+    tipoId: '1', id: '1-1234-1234', tipoNombre: '1', por: 'PLA', placa: 'BKN-216', valor: 'X1', plano: 'SJ-12345-2001', serie: '2024', codigo: 'ABC123', anio: '2026', registro: '2' };
   for (const c of R.CONSULTAS) {
     const d = { ...ej }; for (const f of c.campos) if (f.t === 'sel' && !f.ops.some(o => o[0] === d[f.k])) d[f.k] = f.ops[0][0];
     const r = R.preparar(c.id, d);

@@ -20,7 +20,7 @@ function partir(txt,n){const out=[];for(const linea of String(txt).replace(/\r/g
 /**
  * crear({titulo, subtitulo, datos:[[etiqueta,valor]], bloques:[{t:'h'|'p'|'fila'|'sep', x}], pie}) → Uint8Array (PDF)
  */
-function crear({titulo='Consulta al Registro Nacional',subtitulo='',datos=[],bloques=[],pie='',autor=''}){
+function crear({titulo='Consulta al Registro Nacional',subtitulo='',datos=[],bloques=[],pie='',autor='',encabezado='LEGAL MARTÍNEZ & CORTÉS'}){
  const paginas=[];let ops=[],y=0;
  const nueva=()=>{ops=[];paginas.push(ops);y=H-M};
  const txt=(estilo,x,yy,s)=>ops.push({estilo,x,y:yy,s});
@@ -28,7 +28,7 @@ function crear({titulo='Consulta al Registro Nacional',subtitulo='',datos=[],blo
  const espacio=need=>{if(y-need<M+28)nueva()};
  nueva();
  // Encabezado
- txt(F.label,M,y,'LEGAL MARTÍNEZ & CORTÉS · CONSULTA AL REGISTRO NACIONAL');y-=18;
+ txt(F.label,M,y,String(encabezado).toUpperCase()+' · CONSULTA AL REGISTRO NACIONAL');y-=18;
  for(const l of partir(titulo,charsPorLinea(F.title.size)*1.05|0)){txt(F.title,M,y,l);y-=16}
  if(subtitulo){for(const l of partir(subtitulo,charsPorLinea(F.label.size)*1.15|0)){txt(F.label,M,y,l);y-=11}}
  y-=4;linea(M,y,W-M,.2,1);y-=14;

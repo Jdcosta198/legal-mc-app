@@ -154,7 +154,7 @@ async function avanzar(){
    const c=capturar();trabajo.fase='lista';trabajo.resultado={titulo:c.titulo,emitido:c.emitido,vacio:c.vacio};guardarTrabajo();
    barra.estado(c.vacio?'El Registro no encontró datos con esos números. Revisalos.':'Resultado listo.',c.vacio?'error':'ok');
    enviar('resultado',{captura:c,resumen:trabajo.resumen});
-   if(trabajo.guardarSolo&&trabajo.casoId&&!c.vacio&&!trabajo.guardado)guardar();
+   // El guardado automático lo hace la app al recibir «resultado» (un solo PDF por consulta).
    return}
  }catch(e){barra.estado('Error del asistente: '+(e.message||e),'error')}
  finally{ocupado=false;barra.contador()}}
@@ -185,8 +185,8 @@ const barra=(()=>{let host,root,$=()=>null;
  .min .row,.min .cnt{display:none}.x{padding:6px 10px;min-height:32px}`;
  function montar(){if(host)return;host=document.createElement('div');host.id='lmc-barra-host';root=host.attachShadow({mode:'open'});
   let casos=(trabajo&&trabajo.casos)||[];if(typeof casos==='string')try{casos=JSON.parse(casos)}catch{casos=[]}if(!Array.isArray(casos))casos=[];const conApp=nativo||(window.opener&&trabajo&&trabajo.origen);
-  root.innerHTML=`<style>${css}</style><div class="b" role="region" aria-label="Asistente de consultas de Legal M&C">
-  <div class="top"><span class="logo">⚖ LEGAL M&amp;C</span><span class="st" id="st" role="status" aria-live="polite">Asistente del Registro listo.</span><span class="cnt" id="cnt"></span><button class="x" id="min" aria-label="Minimizar">–</button></div>
+  root.innerHTML=`<style>${css}</style><div class="b" role="region" aria-label="Asistente de consultas al Registro">
+  <div class="top"><span class="logo">⚖ ${String((trabajo&&trabajo.marca)||'LEGAL M&C').replace(/[<&>"]/g,x=>({"<":"&lt;","&":"&amp;",">":"&gt;",'"':"&quot;"})[x])}</span><span class="st" id="st" role="status" aria-live="polite">Asistente del Registro listo.</span><span class="cnt" id="cnt"></span><button class="x" id="min" aria-label="Minimizar">–</button></div>
   ${!trabajo?`<div class="row"><input id="rapido" placeholder="Finca, placa, cédula o plano (ej. 4-179693-002)" aria-label="Número a consultar"><button class="gold" id="ir">Consultar</button></div>`:''}
   <div class="row">${conApp&&casos.length?`<select id="caso" aria-label="Expediente"><option value="">Guardar en el expediente…</option>${casos.map(c=>`<option value="${String(c[0]).replace(/"/g,'')}">${String(c[1]).replace(/[<&]/g,'')}</option>`).join('')}</select>`:''}
   <button class="gold" id="guardar">${conApp?'Guardar en expediente':'Guardar PDF'}</button>${nativo?'<button id="cerrar">Volver a la app</button>':''}</div></div>`;
